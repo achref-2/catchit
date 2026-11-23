@@ -1,0 +1,26 @@
+[project]
+name = "catchit"
+version = "0.1.0"
+description = "Scan GitHub repos for malware and AI-agent prompt injection before you clone them."
+readme = "README.md"
+authors = [
+    { name = "Achref aroua", email = "125191063+achref-2@users.noreply.github.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "httpx>=0.28.1",
+    "rich>=15.0.0",
+    "typer>=0.29.2",
+]
+
+[project.scripts]
+catchit = "catchit:main"
+
+[build-system]
+requires = ["uv_build>=0.13.9,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]
